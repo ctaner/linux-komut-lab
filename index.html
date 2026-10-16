@@ -12,7 +12,7 @@ header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;flex-w
 h1{font-size:1.3rem;margin:0}
 h2{font-size:1.05rem;margin:0 0 10px}
 .sub{color:var(--muted);font-size:.9rem;margin-top:4px}
-input,button{font:inherit}
+input,button,textarea{font:inherit}
 .name{display:flex;gap:8px;flex-wrap:wrap}
 .name input{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:8px}
 .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer}
@@ -25,13 +25,16 @@ main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16
 .line.prompt{color:var(--accent)}
 .line.err{color:var(--err)}
 .line.ok{color:var(--accent);font-weight:bold}
+.line.info{color:var(--blue)}
 .term-input{display:flex;gap:8px;align-items:center;font-family:inherit}
 .term-input span{color:var(--accent);white-space:nowrap}
 #cmd{flex:1;min-width:0;background:transparent;border:none;color:var(--text);font:inherit;outline:none;caret-color:var(--accent)}
+#cmd:disabled{opacity:.5}
 .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0}
 .bar div{height:100%;width:0;background:var(--accent);transition:width .3s}
 .progress-text{font-size:.9rem;color:var(--muted)}
 .cert{background:#052e16;border:1px solid #166534;color:#bbf7d0;padding:10px;border-radius:8px;margin:10px 0 0}
+.tasks-wrap{max-height:60vh;overflow-y:auto;padding-right:4px}
 .task{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
 .task.done{border-color:#166534;background:#052e16}
 .task-head{display:flex;gap:10px;align-items:center}
@@ -45,6 +48,10 @@ details code{display:inline-block;margin-top:6px}
 .cheat li{padding:6px 0;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--muted)}
 .cheat li:last-child{border-bottom:none}
 .cheat code{color:#a5f3fc}
+.nano{position:fixed;inset:0;background:#020617;display:flex;flex-direction:column;z-index:10;font-family:ui-monospace,Menlo,Consolas,monospace}
+.nano-bar{background:#e5e7eb;color:#020617;padding:6px 10px;font-weight:bold;font-size:14px}
+.nano textarea{flex:1;background:#020617;color:#e5e7eb;border:none;outline:none;padding:10px;font-size:14px;resize:none}
+.nano-help{background:#e5e7eb;color:#020617;padding:6px 10px;font-size:13px}
 footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
 </style>
 </head>
@@ -81,42 +88,59 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
 
     <section class="card">
       <h2>Görevler</h2>
-      <div id="tasks"></div>
+      <div id="tasks" class="tasks-wrap"></div>
     </section>
 
     <section class="card">
       <h2>Komut özeti</h2>
       <ul class="cheat">
+        <li><code>help</code> / <code>man komut</code> — yardım ve kılavuz</li>
         <li><code>pwd</code> — bulunduğun dizinin yolunu göster</li>
-        <li><code>ls [-la]</code> — dizin içeriğini listele (-a gizli, -l ayrıntılı)</li>
         <li><code>cd dizin</code> — dizin değiştir (<code>cd ..</code> üst dizin, <code>cd ~</code> ev dizini)</li>
+        <li><code>clear</code> — ekranı temizle</li>
+        <li><code>ls [-la]</code> — dizin içeriğini listele (-a gizli, -l ayrıntılı)</li>
         <li><code>mkdir [-p] ad</code> — dizin oluştur</li>
         <li><code>touch dosya</code> — boş dosya oluştur</li>
         <li><code>echo metin &gt; dosya</code> — dosyaya yaz (<code>&gt;&gt;</code> ile sona ekle)</li>
         <li><code>cat dosya</code> — dosya içeriğini göster</li>
-        <li><code>head -n 5 dosya</code> / <code>tail -n 5 dosya</code> — ilk / son satırlar</li>
-        <li><code>wc -l dosya</code> — satır sayısını say</li>
-        <li><code>grep [-i] desen dosya</code> — desen içeren satırları bul</li>
-        <li><code>find . -name "*.txt"</code> — ada göre ara</li>
+        <li><code>more dosya</code> / <code>less dosya</code> — sayfa sayfa göster</li>
         <li><code>cp [-r] kaynak hedef</code> — kopyala</li>
         <li><code>mv kaynak hedef</code> — taşı / yeniden adlandır</li>
         <li><code>rm [-r] ad</code> — sil (geri alınamaz!)</li>
+        <li><code>grep [-i] desen dosya</code> — desen içeren satırları bul</li>
         <li><code>chmod 755 dosya</code> / <code>chmod +x dosya</code> — izin değiştir</li>
-        <li><code>man komut</code> — kısa kılavuz</li>
+        <li><code>find . -name "*.txt"</code> — ada göre ara</li>
+        <li><code>cal</code> / <code>date</code> — takvim ve tarih</li>
+        <li><code>which ls</code> / <code>whereis ls</code> — komutun konumu</li>
+        <li><code>wc -l dosya</code> — satır sayısını say</li>
+        <li><code>dd if=/dev/zero of=dosya bs=512 count=4</code> — blok kopyalama</li>
+        <li><code>uname -a</code>, <code>uptime</code>, <code>free</code>, <code>df -h</code> — sistem bilgisi</li>
+        <li><code>whoami</code>, <code>sudo -i</code> (root), <code>exit</code> — kullanıcı ve yetki</li>
+        <li><code>nano dosya</code> — metin düzenle (Ctrl+O kaydet, Ctrl+X çık)</li>
+        <li><code>ps</code>, <code>top</code>, <code>kill PID</code> — süreçler</li>
+        <li><code>sudo adduser ad</code> / <code>sudo deluser ad</code> — kullanıcı yönetimi</li>
+        <li><code>tar -czf a.tar.gz dizin</code> / <code>tar -xzf a.tar.gz</code> — sıkıştır ve aç</li>
+        <li><code>systemctl status|start|stop|restart ad</code> — servis yönetimi</li>
+        <li><code>sudo apt update</code> / <code>sudo apt install paket</code> — paket kurma</li>
+        <li><code>ip a</code>, <code>ping host</code>, <code>ss -tuln</code> — ağ komutları</li>
+        <li><code>sudo reboot</code> / <code>sudo shutdown -h now</code> — yeniden başlat / kapat</li>
       </ul>
     </section>
   </aside>
 </main>
 
-<footer>Eğitim amaçlı sanal ortam. Gerçek bilgisayarınızdaki dosyalara dokunmaz.</footer>
+<footer>Eğitim amaçlı sanal ortam. Gerçek bilgisayarınızdaki dosyalara ve süreçlere dokunmaz.</footer>
 
 <script>
 (function () {
   'use strict';
 
   const HOME = '/home/kullanici';
-  const KEY = 'linux-komut-lab-v1';
+  const KEY = 'linux-komut-lab-v2';
   const NAME_KEY = 'linux-komut-lab-isim';
+  const AVAILABLE_PACKAGES = ['nginx', 'curl', 'htop', 'tree', 'git', 'vim'];
+
+  let halted = false;
 
   /* ---------- Sanal dosya sistemi ---------- */
   const dir = (children = {}, mode = 'drwxr-xr-x') => ({ type: 'dir', mode, children });
@@ -126,26 +150,49 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
     return dir({
       home: dir({
         kullanici: dir({
-          'notlar.txt': file('Linux, açık kaynaklı bir işletim sistemi çekirdeğidir.\nBu dosya grep alıştırması için hazırlandı.\nLinux ağ sunucularında yaygın olarak kullanılır.\n'),
+          'notlar.txt': file('Linux, açık kaynaklı bir işletim sistemi çekirdeğidir.\nBu dosya grep alıştırması için hazırlandı.\nLinux ağ sunucularında yaygın olarak kullanılır.\nDosya sistemi hiyerarşik bir ağaç yapısındadır.\n'),
           'betik.sh': file('#!/bin/bash\necho "Merhaba dünya"\n'),
           '.gizli': file('Nokta ile başlayan dosyalar gizlidir.\n'),
           gecici: dir({ 'eski.log': file('eski kayıt\n') }),
           belgeler: dir({ 'rapor.txt': file('Q3 raporu: ağ altyapısı yenilendi.\nSunucu sayısı: 12\n') })
         })
       }),
+      root: dir({}),
       etc: dir({ hostname: file('lab\n') }),
+      dev: dir({ zero: file('') }),
       tmp: dir({})
     });
   }
 
+  function baseProcesses() {
+    return [
+      { pid: 1, user: 'root', cmd: 'init' },
+      { pid: 412, user: 'root', cmd: 'sshd' },
+      { pid: 530, user: 'root', cmd: 'cron' },
+      { pid: 1001, user: 'kullanici', cmd: 'bash' },
+      { pid: 1002, user: 'kullanici', cmd: 'sleep 9999' }
+    ];
+  }
+
   function freshState() {
-    return { fs: initialFS(), cwd: HOME, history: [], done: [] };
+    return {
+      fs: initialFS(),
+      cwd: HOME,
+      user: 'kullanici',
+      users: ['root', 'kullanici'],
+      history: [],
+      done: [],
+      processes: baseProcesses(),
+      services: { ssh: 'active', cron: 'active' },
+      packages: ['bash', 'coreutils', 'openssh-server'],
+      flags: { rootOnce: false, killed: false, deluser: false }
+    };
   }
 
   function loadState() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY));
-      if (s && s.fs) return s;
+      if (s && s.fs) return Object.assign(freshState(), s);
     } catch (e) { /* yoksay */ }
     return freshState();
   }
@@ -157,9 +204,11 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
   }
 
   /* ---------- Yol yardımcıları ---------- */
+  function homeDir() { return state.user === 'root' ? '/root' : HOME; }
+
   function resolvePath(p) {
     if (p === undefined || p === '') p = '.';
-    if (p === '~' || p.startsWith('~/')) p = HOME + p.slice(1);
+    if (p === '~' || p.startsWith('~/')) p = homeDir() + p.slice(1);
     const parts = p.startsWith('/') ? [] : state.cwd.split('/').filter(Boolean);
     for (const s of p.split('/').filter(Boolean)) {
       if (s === '.') continue;
@@ -196,13 +245,14 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
   const readFile = p => { const n = getNode(p); return n && n.type === 'file' ? n.content : ''; };
 
   function disp(abs) {
-    if (abs === HOME) return '~';
-    if (abs.startsWith(HOME + '/')) return '~' + abs.slice(HOME.length);
+    const h = homeDir();
+    if (abs === h) return '~';
+    if (abs.startsWith(h + '/')) return '~' + abs.slice(h.length);
     return abs;
   }
 
   function promptText() {
-    return `kullanici@lab:${disp(state.cwd)}$`;
+    return `${state.user}@lab:${disp(state.cwd)}${state.user === 'root' ? '#' : '$'}`;
   }
 
   /* ---------- Terminal çıktısı ---------- */
@@ -219,10 +269,9 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
   }
 
   function scrollDown() { term.scrollTop = term.scrollHeight; }
-
   function refreshPrompt() { promptEl.textContent = promptText(); }
 
-  /* ---------- Komut ayrıştırma ---------- */
+  /* ---------- Ayrıştırma ---------- */
   function tokenize(line) {
     const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
     const tokens = [];
@@ -235,30 +284,103 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
 
   const ok = (out = []) => ({ out, err: [] });
   const fail = msg => ({ out: [], err: [msg] });
+  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+  function targetFor(srcAbs, dstAbs) {
+    const dn = getNode(dstAbs);
+    if (dn && dn.type === 'dir') {
+      const base = srcAbs.split('/').filter(Boolean).pop();
+      return dstAbs === '/' ? '/' + base : dstAbs + '/' + base;
+    }
+    return dstAbs;
+  }
+
+  function headTail(args, which) {
+    let n = 10;
+    const rest = [];
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '-n') n = parseInt(args[++i], 10);
+      else if (/^-\d+$/.test(args[i])) n = parseInt(args[i].slice(1), 10);
+      else rest.push(args[i]);
+    }
+    if (!rest.length) return fail(`${which}: dosya belirtilmedi`);
+    const node = getNode(resolvePath(rest[0]));
+    if (!node) return fail(`${which}: ${rest[0]}: Böyle bir dosya veya dizin yok`);
+    if (node.type === 'dir') return fail(`${which}: ${rest[0]}: Bir dizin`);
+    const lines = node.content.split('\n');
+    if (lines[lines.length - 1] === '') lines.pop();
+    return ok(which === 'head' ? lines.slice(0, n) : lines.slice(Math.max(0, lines.length - n)));
+  }
+
+  function pager(name, args) {
+    if (!args.length) return fail(`${name}: dosya belirtilmedi`);
+    const p = args[args.length - 1];
+    const node = getNode(resolvePath(p));
+    if (!node) return fail(`${name}: ${p}: Böyle bir dosya veya dizin yok`);
+    if (node.type === 'dir') return fail(`${name}: ${p}: Bir dizin`);
+    const lines = node.content.split('\n');
+    if (lines[lines.length - 1] === '') lines.pop();
+    const shown = lines.slice(0, 10);
+    if (lines.length > 10) {
+      shown.push(`-- Devamı var (${lines.length} satır). Kalanı görmek için: tail -n +11 ${p}`);
+    }
+    return ok(shown);
+  }
+
+  function procTable() {
+    return [
+      '  PID USER      COMMAND',
+      ...state.processes.map(p => `${String(p.pid).padStart(5)} ${p.user.padEnd(9)} ${p.cmd}`)
+    ];
+  }
+
+  function nowHM() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
 
   const MANUAL = {
+    help: ['NAME', '  help - kullanılabilir komutları listeler.'],
+    man: ['NAME', '  man - bir komutun kılavuzunu gösterir.', '', 'ÖRNEK', '  man ls'],
     pwd: ['NAME', '  pwd - bulunduğunuz dizinin tam yolunu yazdırır.'],
     ls: ['NAME', '  ls - dizin içeriğini listeler.', '', 'SEÇENEKLER', '  -a  nokta ile başlayan gizli dosyaları da gösterir', '  -l  izinler, boyut ve ad ile ayrıntılı liste verir'],
     cd: ['NAME', '  cd - çalışma dizinini değiştirir.', '', 'ÖRNEK', '  cd ..   bir üst dizine çıkar', '  cd ~    ev dizinine döner'],
+    clear: ['NAME', '  clear - terminal ekranını temizler.'],
     mkdir: ['NAME', '  mkdir - yeni dizin oluşturur.', '', 'SEÇENEKLER', '  -p  ara dizinleri de gerekirse oluşturur'],
     touch: ['NAME', '  touch - dosya yoksa boş bir dosya oluşturur.'],
     echo: ['NAME', '  echo - verilen metni yazdırır.', '', 'YÖNLENDİRME', '  >   çıktıyı dosyanın üzerine yazar', '  >>  çıktıyı dosyanın sonuna ekler'],
     cat: ['NAME', '  cat - dosya içeriğini ekrana yazdırır.'],
+    more: ['NAME', '  more - dosyayı sayfa sayfa gösterir (ilk 10 satır).'],
+    less: ['NAME', '  less - dosyayı sayfa sayfa gösterir (ilk 10 satır).'],
     cp: ['NAME', '  cp - dosya kopyalar.', '', 'SEÇENEKLER', '  -r  dizinleri özyinelemeli kopyalar'],
     mv: ['NAME', '  mv - dosya veya dizini taşır ya da yeniden adlandırır.'],
     rm: ['NAME', '  rm - dosya siler. Bu işlem geri alınamaz.', '', 'SEÇENEKLER', '  -r  dizinleri ve içeriğini siler', '  -f  dosya yoksa hata vermez'],
     grep: ['NAME', '  grep - desen içeren satırları bulur.', '', 'SEÇENEKLER', '  -i  büyük-küçük harf farkını yok sayar'],
     chmod: ['NAME', '  chmod - dosya izinlerini değiştirir.', '', 'ÖRNEK', '  chmod 755 dosya     sayısal mod', '  chmod +x dosya      çalıştırma izni ekler'],
-    find: ['NAME', '  find - dizin ağacında dosya arar.', '', 'ÖRNEK', '  find . -name "*.txt"']
+    find: ['NAME', '  find - dizin ağacında dosya arar.', '', 'ÖRNEK', '  find . -name "*.txt"'],
+    wc: ['NAME', '  wc - satır, kelime ve karakter sayar.', '', 'SEÇENEKLER', '  -l  yalnızca satır sayısı'],
+    dd: ['NAME', '  dd - blok blok veri kopyalar.', '', 'ÖRNEK', '  dd if=/dev/zero of=test.img bs=512 count=4'],
+    nano: ['NAME', '  nano - metin düzenleyicisi.', '', 'KISAYOLLAR', '  Ctrl+O  kaydet', '  Ctrl+X  çık'],
+    ps: ['NAME', '  ps - çalışan süreçleri listeler.'],
+    kill: ['NAME', '  kill - bir süreci PID numarasıyla sonlandırır.', '', 'ÖRNEK', '  kill 1002'],
+    tar: ['NAME', '  tar - dosya arşivi oluşturur (-c) ya da açar (-x).', '', 'ÖRNEK', '  tar -czf arsiv.tar.gz belgeler', '  tar -xzf arsiv.tar.gz'],
+    systemctl: ['NAME', '  systemctl - servisleri yönetir.', '', 'ÖRNEK', '  systemctl status ssh', '  sudo systemctl restart cron'],
+    apt: ['NAME', '  apt - paket yöneticisi.', '', 'ÖRNEK', '  sudo apt update', '  sudo apt install nginx'],
+    ping: ['NAME', '  ping - bir hedefe ağ bağlantısını test eder.', '', 'ÖRNEK', '  ping 127.0.0.1'],
+    reboot: ['NAME', '  reboot - sistemi yeniden başlatır (root yetkisi gerekir).'],
+    shutdown: ['NAME', '  shutdown - sistemi kapatır (root yetkisi gerekir).', '', 'ÖRNEK', '  sudo shutdown -h now']
   };
 
   const cmds = {
     help() {
       return ok([
         'Kullanılabilir komutlar:',
-        '  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm',
-        '  head  tail  wc  grep  find  chmod',
-        '  whoami  hostname  uname  date  ps  history  man  clear',
+        '  pwd  ls  cd  clear  mkdir  touch  cat  more  less  echo',
+        '  cp  mv  rm  head  tail  wc  grep  find  chmod  dd',
+        '  cal  date  which  whereis  whoami  su  sudo  exit',
+        '  nano  ps  top  kill  adduser  deluser  tar',
+        '  systemctl  apt  ip  ifconfig  ping  ss  netstat',
+        '  uname  uptime  free  df  hostname  history  man  reboot  shutdown',
         '',
         'İpucu: "man ls" ile bir komutun kısa açıklamasını görebilirsin.'
       ]);
@@ -310,6 +432,8 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
       state.cwd = abs;
       return ok();
     },
+
+    clear() { return { out: [], err: [], clear: true }; },
 
     mkdir(args) {
       const flags = args.filter(a => a.startsWith('-')).join('');
@@ -369,85 +493,11 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
       return { out, err };
     },
 
+    more(args) { return pager('more', args); },
+    less(args) { return pager('less', args); },
+
     head(args) { return headTail(args, 'head'); },
     tail(args) { return headTail(args, 'tail'); },
-
-    wc(args) {
-      const flags = args.filter(a => a.startsWith('-')).join('');
-      const paths = args.filter(a => !a.startsWith('-'));
-      if (!paths.length) return fail('wc: dosya belirtilmedi');
-      const node = getNode(resolvePath(paths[0]));
-      if (!node) return fail(`wc: ${paths[0]}: Böyle bir dosya veya dizin yok`);
-      if (node.type === 'dir') return fail(`wc: ${paths[0]}: Bir dizin`);
-      const c = node.content;
-      const lines = (c.match(/\n/g) || []).length;
-      const words = c.split(/\s+/).filter(Boolean).length;
-      if (flags.includes('l')) return ok([`${lines} ${paths[0]}`]);
-      return ok([`${lines} ${words} ${c.length} ${paths[0]}`]);
-    },
-
-    grep(args) {
-      const flags = args.filter(a => a.startsWith('-')).join('');
-      const rest = args.filter(a => !a.startsWith('-'));
-      if (rest.length < 2) return fail('grep: kullanım: grep [-i] desen dosya');
-      const [pat, p] = rest;
-      const node = getNode(resolvePath(p));
-      if (!node) return fail(`grep: ${p}: Böyle bir dosya veya dizin yok`);
-      if (node.type === 'dir') return fail(`grep: ${p}: Bir dizin`);
-      const ci = flags.includes('i');
-      const hit = ci ? pat.toLowerCase() : pat;
-      const out = node.content.split('\n')
-        .filter(l => l.length && (ci ? l.toLowerCase().includes(hit) : l.includes(hit)));
-      return ok(out);
-    },
-
-    find(args) {
-      const p = args.length && !args[0].startsWith('-') ? args[0] : '.';
-      const ni = args.indexOf('-name');
-      const pattern = ni >= 0 ? args[ni + 1] : null;
-      const startAbs = resolvePath(p);
-      const root = getNode(startAbs);
-      if (!root) return fail(`find: '${p}': Böyle bir dosya veya dizin yok`);
-      const re = pattern
-        ? new RegExp('^' + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$')
-        : null;
-      const out = [];
-      const walk = (node, abs) => {
-        const name = abs === '/' ? '/' : abs.split('/').pop();
-        if (!re || re.test(name)) out.push(disp(abs));
-        if (node.type === 'dir') {
-          for (const n of Object.keys(node.children).sort()) {
-            walk(node.children[n], abs === '/' ? '/' + n : abs + '/' + n);
-          }
-        }
-      };
-      walk(root, startAbs);
-      return ok(out);
-    },
-
-    rm(args) {
-      const flags = args.filter(a => a.startsWith('-')).join('');
-      const paths = args.filter(a => !a.startsWith('-'));
-      if (!paths.length) return fail('rm: eksik operand');
-      const err = [];
-      for (const p of paths) {
-        const abs = resolvePath(p);
-        if (abs === '/') { err.push("rm: '/' kaldırılamaz"); continue; }
-        const node = getNode(abs);
-        if (!node) {
-          if (!flags.includes('f')) err.push(`rm: '${p}' kaldırılamıyor: Böyle bir dosya veya dizin yok`);
-          continue;
-        }
-        if (node.type === 'dir' && !flags.includes('r')) {
-          err.push(`rm: '${p}' kaldırılamıyor: Bir dizin (-r kullanın)`);
-          continue;
-        }
-        const pn = parentNode(abs);
-        delete pn.node.children[pn.name];
-      }
-      if (!getNode(state.cwd)) state.cwd = HOME;
-      return { out: [], err };
-    },
 
     cp(args) {
       const flags = args.filter(a => a.startsWith('-')).join('');
@@ -497,8 +547,47 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
         delete sp.node.children[sp.name];
         tp.node.children[tp.name] = sNode;
       }
-      if (!getNode(state.cwd)) state.cwd = HOME;
+      if (!getNode(state.cwd)) state.cwd = homeDir();
       return { out: [], err };
+    },
+
+    rm(args) {
+      const flags = args.filter(a => a.startsWith('-')).join('');
+      const paths = args.filter(a => !a.startsWith('-'));
+      if (!paths.length) return fail('rm: eksik operand');
+      const err = [];
+      for (const p of paths) {
+        const abs = resolvePath(p);
+        if (abs === '/') { err.push("rm: '/' kaldırılamaz"); continue; }
+        const node = getNode(abs);
+        if (!node) {
+          if (!flags.includes('f')) err.push(`rm: '${p}' kaldırılamıyor: Böyle bir dosya veya dizin yok`);
+          continue;
+        }
+        if (node.type === 'dir' && !flags.includes('r')) {
+          err.push(`rm: '${p}' kaldırılamıyor: Bir dizin (-r kullanın)`);
+          continue;
+        }
+        const pn = parentNode(abs);
+        delete pn.node.children[pn.name];
+      }
+      if (!getNode(state.cwd)) state.cwd = homeDir();
+      return { out: [], err };
+    },
+
+    grep(args) {
+      const flags = args.filter(a => a.startsWith('-')).join('');
+      const rest = args.filter(a => !a.startsWith('-'));
+      if (rest.length < 2) return fail('grep: kullanım: grep [-i] desen dosya');
+      const [pat, p] = rest;
+      const node = getNode(resolvePath(p));
+      if (!node) return fail(`grep: ${p}: Böyle bir dosya veya dizin yok`);
+      if (node.type === 'dir') return fail(`grep: ${p}: Bir dizin`);
+      const ci = flags.includes('i');
+      const hit = ci ? pat.toLowerCase() : pat;
+      const out = node.content.split('\n')
+        .filter(l => l.length && (ci ? l.toLowerCase().includes(hit) : l.includes(hit)));
+      return ok(out);
     },
 
     chmod(args) {
@@ -533,55 +622,392 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
       return ok();
     },
 
-    whoami() { return ok(['kullanici']); },
-    hostname() { return ok(['lab']); },
-    uname(args) { return ok([args.includes('-a') ? 'Linux lab 6.8.0-lab #1 SMP x86_64 GNU/Linux' : 'Linux']); },
-    date() { return ok([new Date().toLocaleString('tr-TR')]); },
-    history() { return ok(state.history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`)); },
+    find(args) {
+      const p = args.length && !args[0].startsWith('-') ? args[0] : '.';
+      const ni = args.indexOf('-name');
+      const pattern = ni >= 0 ? args[ni + 1] : null;
+      const startAbs = resolvePath(p);
+      const root = getNode(startAbs);
+      if (!root) return fail(`find: '${p}': Böyle bir dosya veya dizin yok`);
+      const re = pattern
+        ? new RegExp('^' + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$')
+        : null;
+      const out = [];
+      const walk = (node, abs) => {
+        const name = abs === '/' ? '/' : abs.split('/').pop();
+        if (!re || re.test(name)) out.push(disp(abs));
+        if (node.type === 'dir') {
+          for (const n of Object.keys(node.children).sort()) {
+            walk(node.children[n], abs === '/' ? '/' + n : abs + '/' + n);
+          }
+        }
+      };
+      walk(root, startAbs);
+      return ok(out);
+    },
 
-    ps() {
+    cal() {
+      const d = new Date();
+      const y = d.getFullYear(), mo = d.getMonth();
+      const title = d.toLocaleString('tr-TR', { month: 'long' }) + ' ' + y;
+      const days = new Date(y, mo + 1, 0).getDate();
+      const offset = (new Date(y, mo, 1).getDay() + 6) % 7;
+      const cells = [];
+      for (let i = 0; i < offset; i++) cells.push('  ');
+      for (let i = 1; i <= days; i++) cells.push(String(i).padStart(2));
+      const rows = [];
+      for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7).join(' '));
+      return ok([title, 'Pt Sa Ça Pe Cu Ct Pz', ...rows]);
+    },
+
+    date() { return ok([new Date().toLocaleString('tr-TR')]); },
+
+    which(args) {
+      return ok(args.filter(c => hasOwn(cmds, c)).map(c => `/usr/bin/${c}`));
+    },
+
+    whereis(args) {
+      return ok(args.map(c => hasOwn(cmds, c) ? `${c}: /usr/bin/${c} /usr/share/man/man1/${c}.1.gz` : `${c}:`));
+    },
+
+    whoami() { return ok([state.user]); },
+    su() { return ok(); },
+    sudo() { return ok(); },
+    exit() {
+      if (state.user === 'root') {
+        state.user = 'kullanici';
+        state.cwd = HOME;
+        return ok(['logout']);
+      }
+      return ok(['Zaten normal kullanıcı olarak çalışıyorsunuz. (Bu sanal terminal kapanmaz.)']);
+    },
+
+    nano() { return fail('nano: dosya belirtilmedi'); },
+
+    adduser(args) {
+      if (state.user !== 'root') return fail('adduser: Bu işlem için root yetkisi gerekir (sudo kullanın).');
+      const name = args.filter(a => !a.startsWith('-'))[0];
+      if (!name) return fail('adduser: kullanıcı adı belirtilmedi');
+      if (!/^[a-z_][a-z0-9_-]*$/.test(name)) return fail(`adduser: geçersiz kullanıcı adı: ${name}`);
+      if (state.users.includes(name)) return fail(`adduser: '${name}' kullanıcısı zaten var.`);
+      state.users.push(name);
+      const h = getNode('/home');
+      if (h && h.type === 'dir' && !h.children[name]) h.children[name] = dir({});
+      return ok([`Kullanıcı '${name}' oluşturuldu. Ev dizini: /home/${name}`]);
+    },
+
+    deluser(args) {
+      if (state.user !== 'root') return fail('deluser: Bu işlem için root yetkisi gerekir (sudo kullanın).');
+      const name = args.filter(a => !a.startsWith('-'))[0];
+      if (!name) return fail('deluser: kullanıcı adı belirtilmedi');
+      if (name === 'root') return fail('deluser: root kullanıcısı silinemez.');
+      if (name === 'kullanici') return fail('deluser: ana kullanıcı bu simülasyonda silinemez.');
+      if (!state.users.includes(name)) return fail(`deluser: '${name}' kullanıcısı yok.`);
+      state.users = state.users.filter(u => u !== name);
+      if (args.includes('--remove-home')) {
+        const h = getNode('/home');
+        if (h && h.children[name]) delete h.children[name];
+      }
+      state.flags.deluser = true;
+      return ok([`Kullanıcı '${name}' silindi.`]);
+    },
+
+    ps() { return ok(procTable()); },
+
+    top() {
       return ok([
-        '  PID TTY          TIME CMD',
-        '    1 ?        00:00:01 init',
-        '  412 ?        00:00:00 sshd',
-        `  ${1000 + state.history.length} pts/0    00:00:00 bash`
+        `top - ${nowHM()} up 2 days, load average: 0.08, 0.05, 0.01`,
+        `Tasks: ${state.processes.length} total`,
+        '',
+        ...procTable()
       ]);
     },
 
+    kill(args) {
+      const pidArg = args.filter(a => !a.startsWith('-'))[0];
+      if (!pidArg) return fail('kill: kullanım: kill PID');
+      const pid = parseInt(pidArg, 10);
+      if (isNaN(pid)) return fail(`kill: ${pidArg}: geçersiz PID`);
+      const proc = state.processes.find(p => p.pid === pid);
+      if (!proc) return fail(`kill: (${pid}) - Böyle bir süreç yok`);
+      if (pid === 1) return fail('kill: init süreci sonlandırılamaz');
+      if (proc.user !== state.user && state.user !== 'root') {
+        return fail(`kill: (${pid}) - İşlem izni yok (Operation not permitted)`);
+      }
+      state.processes = state.processes.filter(p => p.pid !== pid);
+      state.flags.killed = true;
+      return ok([]);
+    },
+
+    tar(args) {
+      const a = [...args];
+      if (!a.length) return fail('tar: işlem belirtilmedi (-c, -x)');
+      let flags = a.shift();
+      if (!flags.startsWith('-')) flags = '-' + flags;
+
+      let cdir = null;
+      const ci = a.indexOf('-C');
+      if (ci >= 0) { cdir = a[ci + 1]; a.splice(ci, 2); }
+
+      let archive = null;
+      if (flags.includes('f')) archive = a.shift();
+      if (!archive) return fail('tar: arşiv adı (-f) belirtilmedi');
+
+      if (flags.includes('c')) {
+        const entries = [], err = [];
+        for (const p of a) {
+          const node = getNode(resolvePath(p));
+          if (!node) err.push(`tar: ${p}: Böyle bir dosya veya dizin yok`);
+          else entries.push({ path: p, node: JSON.parse(JSON.stringify(node)) });
+        }
+        if (!entries.length) return { out: [], err };
+        const pn = parentNode(resolvePath(archive));
+        if (!pn) return fail(`tar: ${archive}: yazılamıyor`);
+        pn.node.children[pn.name] = file(JSON.stringify({ tar: entries }));
+        return { out: flags.includes('v') ? entries.map(e => e.path) : [], err };
+      }
+
+      if (flags.includes('x')) {
+        const node = getNode(resolvePath(archive));
+        if (!node || node.type !== 'file') return fail(`tar: ${archive}: Böyle bir dosya veya dizin yok`);
+        let data;
+        try { data = JSON.parse(node.content).tar; }
+        catch (e) { return fail('tar: arşiv bozuk veya desteklenmiyor'); }
+        const target = getNode(cdir ? resolvePath(cdir) : state.cwd);
+        if (!target || target.type !== 'dir') return fail(`tar: ${cdir || state.cwd}: Dizin değil`);
+        const out = [];
+        for (const e of data) {
+          const name = e.path.split('/').filter(Boolean).pop();
+          target.children[name] = e.node;
+          if (flags.includes('v')) out.push(name);
+        }
+        return ok(out);
+      }
+
+      return fail('tar: -c veya -x seçeneği gerekli');
+    },
+
+    dd(args) {
+      const opts = {};
+      for (const a of args) {
+        const i = a.indexOf('=');
+        if (i > 0) opts[a.slice(0, i)] = a.slice(i + 1);
+      }
+      if (!opts.if) return fail('dd: giriş dosyası (if=) belirtilmedi');
+      if (!opts.of) return fail('dd: çıktı dosyası (of=) belirtilmedi');
+      const bs = parseInt(opts.bs || '512', 10) || 512;
+      let count, content, bytes;
+
+      if (opts.if === '/dev/zero') {
+        count = parseInt(opts.count || '1', 10) || 1;
+        bytes = count * bs;
+        content = 'x'.repeat(Math.min(bytes, 2048)); // simülasyon için sınırlı
+      } else {
+        const src = getNode(resolvePath(opts.if));
+        if (!src || src.type !== 'file') return fail(`dd: ${opts.if}: Böyle bir dosya veya dizin yok`);
+        count = opts.count ? parseInt(opts.count, 10) : Math.ceil(src.content.length / bs);
+        bytes = Math.min(count * bs, src.content.length);
+        content = src.content.slice(0, count * bs);
+      }
+
+      const abs = resolvePath(opts.of);
+      const existing = getNode(abs);
+      if (existing && existing.type === 'dir') return fail(`dd: ${opts.of}: Bir dizin`);
+      if (existing) existing.content = content;
+      else {
+        const pn = parentNode(abs);
+        if (!pn) return fail(`dd: ${opts.of}: Böyle bir dosya veya dizin yok`);
+        pn.node.children[pn.name] = file(content);
+      }
+      return ok([`${count}+0 kayıt girildi`, `${count}+0 kayıt çıkarıldı`, `${bytes} bayt kopyalandı`]);
+    },
+
+    uname(args) {
+      return ok([args.includes('-a') ? 'Linux lab 6.8.0-lab #1 SMP x86_64 GNU/Linux' : 'Linux']);
+    },
+
+    uptime() { return ok([` ${nowHM()} up 2 days, 4:12,  1 user,  load average: 0.08, 0.05, 0.01`]); },
+
+    free() {
+      return ok([
+        '               total        used        free',
+        'Mem:          4015876     1203412     2812464',
+        'Swap:         2097148           0     2097148'
+      ]);
+    },
+
+    df() {
+      return ok([
+        'Filesystem      Size  Used Avail Use% Mounted on',
+        '/dev/vda1        20G  4.1G   15G  22% /'
+      ]);
+    },
+
+    hostname() { return ok(['lab']); },
+
+    history() { return ok(state.history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`)); },
+
+    systemctl(args) {
+      const [action, name] = args;
+      if (!action) return fail('systemctl: işlem belirtilmedi (status, start, stop, restart, enable)');
+      if (action === 'status') {
+        if (!name) return fail('systemctl: servis adı belirtilmedi');
+        const st = state.services[name];
+        if (st === undefined) return fail(`Unit ${name}.service could not be found.`);
+        return ok([
+          `● ${name}.service`,
+          '     Loaded: loaded',
+          `     Active: ${st === 'active' ? 'active (running)' : 'inactive (dead)'}`
+        ]);
+      }
+      if (!['start', 'stop', 'restart', 'enable'].includes(action)) return fail(`systemctl: bilinmeyen işlem: ${action}`);
+      if (!name) return fail('systemctl: servis adı belirtilmedi');
+      if (state.user !== 'root') return fail(`Failed to ${action} ${name}.service: Access denied (sudo kullanın)`);
+      if (state.services[name] === undefined) return fail(`Failed to ${action} ${name}.service: Unit ${name}.service not found.`);
+      if (action === 'start' || action === 'restart') state.services[name] = 'active';
+      if (action === 'stop') state.services[name] = 'inactive';
+      return ok(action === 'enable' ? [`Created symlink for ${name}.service.`] : []);
+    },
+
+    apt(args) {
+      if (state.user !== 'root') return fail('E: Bu işlem için root yetkisi gerekir. "sudo" ile deneyin.');
+      const [sub, ...pkgs] = args;
+      if (sub === 'update') return ok(['Paket listeleri okunuyor...', 'Tamam: depo bilgileri güncellendi.']);
+      if (sub === 'install') {
+        const out = [], err = [];
+        for (const p of pkgs) {
+          if (!AVAILABLE_PACKAGES.includes(p)) { err.push(`E: Paket bulunamadı: ${p}`); continue; }
+          if (!state.packages.includes(p)) state.packages.push(p);
+          if (p === 'nginx') state.services.nginx = 'active';
+          out.push(`${p} kuruldu.`);
+        }
+        return { out, err };
+      }
+      if (sub === 'remove') {
+        const out = [];
+        for (const p of pkgs) {
+          state.packages = state.packages.filter(x => x !== p);
+          if (p === 'nginx') delete state.services.nginx;
+          out.push(`${p} kaldırıldı.`);
+        }
+        return ok(out);
+      }
+      return fail('apt: kullanım: sudo apt update | sudo apt install paket | sudo apt remove paket');
+    },
+
+    ip(args) {
+      if (!args.length || ['a', 'addr', 'address'].includes(args[0])) {
+        return ok([
+          '1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536',
+          '    inet 127.0.0.1/8 scope host lo',
+          '2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500',
+          '    inet 192.168.1.23/24 brd 192.168.1.255 scope global eth0'
+        ]);
+      }
+      return fail(`ip: bilinmeyen komut: ${args[0]}`);
+    },
+
+    ifconfig() {
+      return ok([
+        'lo: 127.0.0.1  netmask 255.0.0.0',
+        'eth0: 192.168.1.23  netmask 255.255.255.0  broadcast 192.168.1.255'
+      ]);
+    },
+
+    ping(args) {
+      const count = args.includes('-c') ? parseInt(args[args.indexOf('-c') + 1], 10) || 3 : 3;
+      const host = args.filter(a => !a.startsWith('-') && !/^\d+$/.test(a)).pop();
+      if (!host) return fail('ping: hedef belirtilmedi');
+      const known = { localhost: '127.0.0.1', '127.0.0.1': '127.0.0.1', '8.8.8.8': '8.8.8.8', 'google.com': '142.250.0.0' };
+      if (!hasOwn(known, host)) return fail(`ping: ${host}: Name or service not known`);
+      const ip = known[host];
+      const out = [`PING ${host} (${ip}) 56(84) bytes of data.`];
+      for (let i = 1; i <= count; i++) {
+        out.push(`64 bytes from ${ip}: icmp_seq=${i} ttl=64 time=${(0.02 + Math.random() * 0.05).toFixed(3)} ms`);
+      }
+      out.push('', `--- ${host} ping istatistiği ---`, `${count} paket gönderildi, ${count} alındı, %0 paket kaybı`);
+      return ok(out);
+    },
+
+    ss() {
+      const rows = [
+        'Netid State  Local Address:Port',
+        'tcp   LISTEN 0.0.0.0:22'
+      ];
+      if (state.services.nginx === 'active') rows.push('tcp   LISTEN 0.0.0.0:80');
+      return ok(rows);
+    },
+
+    netstat() { return cmds.ss(); },
+
     man(args) {
-      const m = args[0] && MANUAL[args[0]];
+      const m = args[0] && hasOwn(MANUAL, args[0]) ? MANUAL[args[0]] : null;
       return m ? ok(m) : fail(`Bu konu için kılavuz girdisi yok: ${args[0] || ''}`);
     },
 
-    clear() { return { out: [], err: [], clear: true }; },
+    reboot() {
+      if (state.user !== 'root') return fail('reboot: Yetkiniz yok. "sudo reboot" deneyin.');
+      state.processes = baseProcesses();
+      return { out: ['Sistem yeniden başlatılıyor... (dosyalarınız korunur)'], err: [], clear: true };
+    },
 
-    sudo() { return fail('sudo: bu simülasyonda devre dışı.'); }
+    shutdown(args) {
+      if (state.user !== 'root') return fail('shutdown: Yetkiniz yok. "sudo shutdown" deneyin.');
+      if (!args.some(a => a === 'now' || a === '-h' || a === '-r' || a === '+0')) {
+        return fail('shutdown: zamanlama belirtin, örnek: sudo shutdown -h now');
+      }
+      return { out: ['Sistem kapatılıyor...'], err: [], halt: true };
+    }
   };
 
-  function targetFor(srcAbs, dstAbs) {
-    const dn = getNode(dstAbs);
-    if (dn && dn.type === 'dir') {
-      const base = srcAbs.split('/').filter(Boolean).pop();
-      return dstAbs === '/' ? '/' + base : dstAbs + '/' + base;
-    }
-    return dstAbs;
-  }
+  /* ---------- Nano (basit düzenleyici) ---------- */
+  function openNano(abs, label) {
+    const node = getNode(abs);
+    const overlay = document.createElement('div');
+    overlay.className = 'nano';
 
-  function headTail(args, which) {
-    let n = 10;
-    const rest = [];
-    for (let i = 0; i < args.length; i++) {
-      if (args[i] === '-n') n = parseInt(args[++i], 10);
-      else if (/^-\d+$/.test(args[i])) n = parseInt(args[i].slice(1), 10);
-      else rest.push(args[i]);
-    }
-    if (!rest.length) return fail(`${which}: dosya belirtilmedi`);
-    const node = getNode(resolvePath(rest[0]));
-    if (!node) return fail(`${which}: ${rest[0]}: Böyle bir dosya veya dizin yok`);
-    if (node.type === 'dir') return fail(`${which}: ${rest[0]}: Bir dizin`);
-    const lines = node.content.split('\n');
-    if (lines[lines.length - 1] === '') lines.pop();
-    return ok(which === 'head' ? lines.slice(0, n) : lines.slice(Math.max(0, lines.length - n)));
+    const bar = document.createElement('div');
+    bar.className = 'nano-bar';
+    bar.textContent = `GNU nano (simülasyon) — ${label}`;
+
+    const ta = document.createElement('textarea');
+    ta.value = node && node.type === 'file' ? node.content : '';
+
+    const help = document.createElement('div');
+    help.className = 'nano-help';
+    help.textContent = 'Ctrl+O: Kaydet     Ctrl+X: Çık';
+
+    overlay.append(bar, ta, help);
+    document.body.appendChild(overlay);
+    ta.focus();
+
+    const close = () => {
+      overlay.remove();
+      evaluateTasks();
+      renderTasks();
+      saveState();
+      input.focus();
+    };
+
+    const save = () => {
+      let n = getNode(abs);
+      if (!n) {
+        const pn = parentNode(abs);
+        if (!pn) { print('nano: dosya kaydedilemedi', 'err'); return; }
+        n = file('');
+        pn.node.children[pn.name] = n;
+      }
+      n.content = ta.value;
+      print(`Dosya kaydedildi: ${label}`, 'info');
+      evaluateTasks();
+      renderTasks();
+      saveState();
+    };
+
+    ta.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key.toLowerCase() === 'o') { e.preventDefault(); save(); }
+      else if (e.ctrlKey && e.key.toLowerCase() === 'x') { e.preventDefault(); close(); }
+    });
   }
 
   /* ---------- Komut çalıştırma ---------- */
@@ -596,10 +1022,38 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
     const tokens = tokenize(line);
     if (!tokens.length) return;
     const [cmd, ...args] = tokens;
-    const fn = Object.prototype.hasOwnProperty.call(cmds, cmd) ? cmds[cmd] : null;
+
+    // Root olma: su, sudo -i, sudo -s
+    if (cmd === 'su' || (cmd === 'sudo' && (args.length === 0 || args[0] === '-i' || args[0] === '-s'))) {
+      if (state.user !== 'root') { state.user = 'root'; state.cwd = '/root'; }
+      state.flags.rootOnce = true;
+      print('root olarak çalışıyorsunuz. Normal kullanıcıya dönmek için: exit', 'info');
+      return;
+    }
+
+    // Tek komutu root olarak çalıştır: sudo komut
+    if (cmd === 'sudo') {
+      const prev = state.user;
+      state.user = 'root';
+      try { execute(args.join(' ')); }
+      finally { state.user = prev; }
+      return;
+    }
+
+    if (cmd === 'nano') {
+      if (!args.length) { print('nano: dosya belirtilmedi', 'err'); return; }
+      const abs = resolvePath(args[0]);
+      const node = getNode(abs);
+      if (node && node.type === 'dir') { print(`nano: ${args[0]}: Bir dizin`, 'err'); return; }
+      openNano(abs, args[0]);
+      return;
+    }
+
+    const fn = hasOwn(cmds, cmd) ? cmds[cmd] : null;
     const res = fn ? fn(args) : fail(`bash: ${cmd}: komut bulunamadı`);
 
-    if (res.clear) { outEl.innerHTML = ''; return; }
+    if (res.halt) halted = true;
+    if (res.clear) outEl.innerHTML = '';
 
     res.err.forEach(e => print(e, 'err'));
 
@@ -622,29 +1076,80 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
   }
 
   /* ---------- Görevler ---------- */
+  const hasCmd = re => state.history.some(h => re.test(h));
+
   const TASKS = [
-    { id: 'pwd', title: 'Neredeyim?', desc: 'Bulunduğun dizinin tam yolunu yazdır.', hint: 'pwd',
-      check: () => state.history.some(h => /^pwd$/.test(h)) },
-    { id: 'ls', title: 'Dosyaları listele', desc: 'Ev dizinindeki dosyaları listele.', hint: 'ls   (ayrıntılı: ls -l, gizli dosyalar için: ls -a)',
-      check: () => state.history.some(h => /^ls(\s|$)/.test(h)) },
-    { id: 'mkdir', title: 'Dizin oluştur', desc: 'Ev dizininde "proje" adında bir dizin oluştur.', hint: 'mkdir proje',
-      check: () => isDir(HOME + '/proje') },
-    { id: 'touch', title: 'Boş dosya oluştur', desc: 'proje dizininin içinde "merhaba.txt" adlı boş bir dosya oluştur.', hint: 'cd proje   ardından   touch merhaba.txt',
-      check: () => isFile(HOME + '/proje/merhaba.txt') },
-    { id: 'echo', title: 'Dosyaya yaz', desc: 'merhaba.txt dosyasının içine "Merhaba Linux" yaz. Yönlendirme için > kullan.', hint: 'echo "Merhaba Linux" > merhaba.txt',
+    { id: 'ls', title: 'Dosyaları listele', desc: 'Ev dizinindeki dosyaları listele. Ayrıntılı ve gizli dosyalar için seçenekleri dene.',
+      hint: 'ls   ·   ls -l   ·   ls -a', check: () => hasCmd(/^ls(\s|$)/) },
+    { id: 'help', title: 'Yardım al', desc: 'help ile komut listesine bak ya da man ile bir komutun kılavuzunu oku.',
+      hint: 'help   veya   man ls', check: () => hasCmd(/^(help|man)(\s|$)/) },
+    { id: 'cdpwd', title: 'cd, pwd ve clear', desc: 'Bir dizine geç, bulunduğun yolu yazdır ve ekranı temizle.',
+      hint: 'cd proje   ·   pwd   ·   clear', check: () => hasCmd(/^cd(\s|$)/) && hasCmd(/^pwd$/) && hasCmd(/^clear$/) },
+    { id: 'mkdir', title: 'Dizin oluştur', desc: 'Ev dizininde "proje" adında bir dizin oluştur.',
+      hint: 'mkdir proje', check: () => isDir(HOME + '/proje') },
+    { id: 'touch', title: 'Boş dosya oluştur', desc: 'proje dizininin içinde "merhaba.txt" adlı boş bir dosya oluştur.',
+      hint: 'cd proje   ardından   touch merhaba.txt', check: () => isFile(HOME + '/proje/merhaba.txt') },
+    { id: 'echo', title: 'Dosyaya yaz', desc: 'merhaba.txt dosyasının içine "Merhaba Linux" yaz. Yönlendirme için > kullan.',
+      hint: 'echo "Merhaba Linux" > merhaba.txt',
       check: () => isFile(HOME + '/proje/merhaba.txt') && readFile(HOME + '/proje/merhaba.txt').trim() === 'Merhaba Linux' },
-    { id: 'cat', title: 'Dosyayı oku', desc: 'merhaba.txt dosyasının içeriğini ekrana yazdır.', hint: 'cat merhaba.txt',
-      check: () => state.history.some(h => /^cat\s+.*merhaba\.txt$/.test(h)) },
-    { id: 'grep', title: 'Metin ara', desc: 'Ev dizinindeki notlar.txt dosyasında "Linux" geçen satırları bul.', hint: 'grep Linux ~/notlar.txt',
-      check: () => state.history.some(h => /^grep\s+.*notlar\.txt$/.test(h)) },
-    { id: 'cp', title: 'Dosyayı kopyala', desc: 'merhaba.txt dosyasını aynı dizinde "yedek.txt" adıyla kopyala.', hint: 'cp merhaba.txt yedek.txt',
+    { id: 'cat', title: 'Dosyayı oku', desc: 'merhaba.txt dosyasının içeriğini ekrana yazdır.',
+      hint: 'cat merhaba.txt', check: () => hasCmd(/^cat\s+.*merhaba\.txt$/) },
+    { id: 'more', title: 'more ve less', desc: 'Ev dizinindeki notlar.txt dosyasını more veya less ile aç.',
+      hint: 'less ~/notlar.txt', check: () => hasCmd(/^(more|less)\s+\S+/) },
+    { id: 'cp', title: 'Dosyayı kopyala', desc: 'proje dizininde merhaba.txt dosyasını "yedek.txt" adıyla kopyala.',
+      hint: 'cp merhaba.txt yedek.txt',
       check: () => isFile(HOME + '/proje/yedek.txt') && readFile(HOME + '/proje/yedek.txt').trim() === 'Merhaba Linux' },
-    { id: 'mv', title: 'Taşı', desc: 'proje içinde "arsiv" dizini oluştur ve yedek.txt dosyasını oraya taşı.', hint: 'mkdir arsiv   ardından   mv yedek.txt arsiv/',
+    { id: 'mv', title: 'Taşı', desc: 'proje içinde "arsiv" dizini oluştur ve yedek.txt dosyasını oraya taşı.',
+      hint: 'mkdir arsiv   ardından   mv yedek.txt arsiv/',
       check: () => isFile(HOME + '/proje/arsiv/yedek.txt') && !exists(HOME + '/proje/yedek.txt') },
-    { id: 'chmod', title: 'İzinleri değiştir', desc: 'Ev dizinindeki betik.sh dosyasının sahibine çalıştırma (x) izni ver.', hint: 'chmod +x ~/betik.sh',
+    { id: 'rm', title: 'rm ile sil', desc: 'arsiv içindeki yedek.txt dosyasını sil, sonra ev dizinindeki gecici dizinini -r ile sil.',
+      hint: 'rm proje/arsiv/yedek.txt   ·   rm -r ~/gecici',
+      check: () => !isFile(HOME + '/proje/arsiv/yedek.txt') && !exists(HOME + '/gecici') },
+    { id: 'grep', title: 'Metin ara', desc: 'Ev dizinindeki notlar.txt dosyasında "Linux" geçen satırları bul.',
+      hint: 'grep Linux ~/notlar.txt', check: () => hasCmd(/^grep\s+.*notlar\.txt$/) },
+    { id: 'chmod', title: 'İzinleri değiştir', desc: 'Ev dizinindeki betik.sh dosyasının sahibine çalıştırma (x) izni ver.',
+      hint: 'chmod +x ~/betik.sh',
       check: () => { const n = getNode(HOME + '/betik.sh'); return !!n && n.mode[3] === 'x'; } },
-    { id: 'rm', title: 'Dizini sil', desc: 'İçinde dosya bulunan "gecici" dizinini tamamen sil. Dizinler için -r gerekir.', hint: 'rm -r ~/gecici',
-      check: () => !exists(HOME + '/gecici') }
+    { id: 'find', title: 'find ile ara', desc: 'Ev dizini altında adı .txt ile biten dosyaları bul.',
+      hint: 'find ~ -name "*.txt"', check: () => hasCmd(/^find\s/) },
+    { id: 'cal', title: 'cal ile takvim', desc: 'Bu ayın takvimini görmek için cal komutunu çalıştır.',
+      hint: 'cal', check: () => hasCmd(/^cal(\s|$)/) },
+    { id: 'date', title: 'date ile tarih', desc: 'Sistemin tarih ve saatini date komutuyla öğren.',
+      hint: 'date', check: () => hasCmd(/^date(\s|$)/) },
+    { id: 'which', title: 'which ve whereis', desc: 'ls komutunun konumunu which veya whereis ile öğren.',
+      hint: 'which ls', check: () => hasCmd(/^(which|whereis)\s+\S+/) },
+    { id: 'wc', title: 'wc ile say', desc: 'notlar.txt dosyasındaki satır sayısını wc ile bul.',
+      hint: 'wc -l ~/notlar.txt', check: () => hasCmd(/^wc\s/) },
+    { id: 'dd', title: 'dd ile dosya üret', desc: '/dev/zero kaynağından ev dizininde test.img adında dosya oluştur.',
+      hint: 'dd if=/dev/zero of=test.img bs=512 count=4', check: () => isFile(HOME + '/test.img') },
+    { id: 'sysinfo', title: 'Sistem hakkında bilgi', desc: 'uname, uptime, free veya df komutlarından birini çalıştır.',
+      hint: 'uname -a   ·   free   ·   df -h', check: () => hasCmd(/^(uname|uptime|free|df|hostname)(\s|$)/) },
+    { id: 'root', title: 'Root ol, sudo ve whoami', desc: 'sudo -i ile root ol, whoami ile kim olduğunu kontrol et, sonra exit ile çık.',
+      hint: 'sudo -i   ·   whoami   ·   exit',
+      check: () => state.flags.rootOnce && hasCmd(/^whoami$/) && hasCmd(/^exit$/) },
+    { id: 'nano', title: 'nano ile düzenle', desc: 'nano ile notlar.txt dosyasını aç, "nano ile eklendi" satırını ekle, Ctrl+O ile kaydet, Ctrl+X ile çık.',
+      hint: 'nano ~/notlar.txt', check: () => readFile(HOME + '/notlar.txt').includes('nano ile eklendi') },
+    { id: 'pratik', title: 'Pratik: history', desc: 'Daha önce yazdığın komutların listesini history ile gör.',
+      hint: 'history', check: () => hasCmd(/^history$/) },
+    { id: 'ps', title: 'ps, top ve kill', desc: 'ps veya top ile süreçleri listele, sonra "sleep 9999" sürecinin PID numarasını kill ile sonlandır.',
+      hint: 'ps   ·   kill 1002', check: () => state.flags.killed && hasCmd(/^(ps|top)(\s|$)/) },
+    { id: 'adduser', title: 'Kullanıcı ekle', desc: 'Root yetkisiyle "ali" adında bir kullanıcı oluştur.',
+      hint: 'sudo adduser ali', check: () => state.users.includes('ali') },
+    { id: 'deluser', title: 'Kullanıcı sil', desc: 'Oluşturduğun ali kullanıcısını sil.',
+      hint: 'sudo deluser ali', check: () => state.flags.deluser === true },
+    { id: 'tar', title: 'Sıkıştır ve aç', desc: 'belgeler dizinini arsiv.tar.gz olarak sıkıştır, sonra tar ile aç.',
+      hint: 'tar -czf arsiv.tar.gz belgeler   ·   tar -xzf arsiv.tar.gz',
+      check: () => isFile(HOME + '/arsiv.tar.gz') && hasCmd(/^tar\s.*x/) },
+    { id: 'systemctl', title: 'Servis yönetimi', desc: 'ssh servisinin durumunu kontrol et, sonra cron servisini yeniden başlat.',
+      hint: 'systemctl status ssh   ·   sudo systemctl restart cron',
+      check: () => hasCmd(/^systemctl\s+status\s/) && hasCmd(/^(sudo )?systemctl\s+restart\s/) },
+    { id: 'apt', title: 'Program kurma', desc: 'Root yetkisiyle nginx paketini kur.',
+      hint: 'sudo apt update   ·   sudo apt install nginx',
+      check: () => state.packages.includes('nginx') },
+    { id: 'network', title: 'Ağ komutları', desc: 'ip a ile arayüzleri listele ve ping ile 127.0.0.1 adresini test et.',
+      hint: 'ip a   ·   ping 127.0.0.1', check: () => hasCmd(/^ip\s+a/) && hasCmd(/^ping\s/) },
+    { id: 'power', title: 'Kapat veya yeniden başlat', desc: 'Sistemi sudo reboot ile yeniden başlat ya da sudo shutdown -h now ile kapat.',
+      hint: 'sudo reboot', check: () => hasCmd(/^(sudo )?(reboot|shutdown)\b/) }
   ];
 
   function evaluateTasks() {
@@ -683,13 +1188,14 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
     const cert = document.getElementById('cert');
     cert.hidden = n < TASKS.length;
     const name = localStorage.getItem(NAME_KEY) || 'Katılımcı';
-    cert.textContent = `Tebrikler ${name}! Tüm görevleri tamamladın. Artık temel Linux komutlarıyla dosya ve dizin yönetebilirsin.`;
+    cert.textContent = `Tebrikler ${name}! Tüm görevleri tamamladın. Artık temel Linux komutlarıyla dosya, kullanıcı, süreç ve servis yönetebilirsin.`;
   }
 
   /* ---------- Giriş olayları ---------- */
   let histIdx = null;
 
   function runCommand(raw) {
+    if (halted) return;
     print(`${promptText()} ${raw}`, 'prompt');
     const line = raw.trim();
     if (line) {
@@ -702,6 +1208,11 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
     renderTasks();
     refreshPrompt();
     scrollDown();
+    if (halted) {
+      input.disabled = true;
+      print('Sistem kapalı. Yeniden başlatmak için sayfayı yenileyin.', 'info');
+      scrollDown();
+    }
   }
 
   function completeTab() {
@@ -747,7 +1258,7 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
     }
   });
 
-  term.addEventListener('click', () => input.focus());
+  term.addEventListener('click', () => { if (!halted) input.focus(); });
 
   const nameInput = document.getElementById('isim');
   nameInput.value = localStorage.getItem(NAME_KEY) || '';
@@ -757,9 +1268,11 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px}
   });
 
   document.getElementById('reset').addEventListener('click', () => {
-    if (!confirm('Tüm dosyalar ve görev ilerlemesi sıfırlansın mı?')) return;
+    if (!confirm('Tüm dosyalar, kullanıcılar ve görev ilerlemesi sıfırlansın mı?')) return;
     state = freshState();
     saveState();
+    halted = false;
+    input.disabled = false;
     outEl.innerHTML = '';
     welcome();
     renderTasks();
